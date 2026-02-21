@@ -1,102 +1,109 @@
-%line 5+1 shared.inc
+%line 5+1 print_rax_routines.asm
+[section .rodata]
+
+ hex_lookup:
+ db '00','01','02','03','04','05','06','07','08','09','0A','0B','0C','0D','0E','0F'
+ db '10','11','12','13','14','15','16','17','18','19','1A','1B','1C','1D','1E','1F'
+ db '20','21','22','23','24','25','26','27','28','29','2A','2B','2C','2D','2E','2F'
+ db '30','31','32','33','34','35','36','37','38','39','3A','3B','3C','3D','3E','3F'
+ db '40','41','42','43','44','45','46','47','48','49','4A','4B','4C','4D','4E','4F'
+ db '50','51','52','53','54','55','56','57','58','59','5A','5B','5C','5D','5E','5F'
+ db '60','61','62','63','64','65','66','67','68','69','6A','6B','6C','6D','6E','6F'
+ db '70','71','72','73','74','75','76','77','78','79','7A','7B','7C','7D','7E','7F'
+ db '80','81','82','83','84','85','86','87','88','89','8A','8B','8C','8D','8E','8F'
+ db '90','91','92','93','94','95','96','97','98','99','9A','9B','9C','9D','9E','9F'
+ db 'A0','A1','A2','A3','A4','A5','A6','A7','A8','A9','AA','AB','AC','AD','AE','AF'
+ db 'B0','B1','B2','B3','B4','B5','B6','B7','B8','B9','BA','BB','BC','BD','BE','BF'
+ db 'C0','C1','C2','C3','C4','C5','C6','C7','C8','C9','CA','CB','CC','CD','CE','CF'
+ db 'D0','D1','D2','D3','D4','D5','D6','D7','D8','D9','DA','DB','DC','DD','DE','DF'
+ db 'E0','E1','E2','E3','E4','E5','E6','E7','E8','E9','EA','EB','EC','ED','EE','EF'
+ db 'F0','F1','F2','F3','F4','F5','F6','F7','F8','F9','FA','FB','FC','FD','FE','FF'
+
+
 [section .data]
- hex_chars db "0123456789ABCDEF"
- print_r_buffer db '0', 'x', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
- print_r_len db 2
+
+ print_r_buffer db '0', 'x', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
  print_r_capacity equ 18
 
+
 [section .text]
- print_r:
+
+
+
+ print_rax_hex:
+
+ mov r8, rdi
+ add r8, 2
+
+ .loop:
+
+ cmp rdi, 1
+ jbe .done
+
+ movzx rcx, al
+ shl rcx, 1
+ mov dx, word [hex_lookup + rcx]
+ mov word [print_r_buffer + rdi], dx
+
+ sub rdi, 2
+
+ shr rax, 8
+
+ jmp .loop
+
+ .done:
+
  mov rax, 1
  mov rdi, 1
  mov rsi, print_r_buffer
- movzx rdx, byte [print_r_len]
+ mov rdx, r8
  syscall
- mov byte [print_r_len], 2
- ret
-
-%line 7+1 push_ah.inc
-[section .text]
- push_ah:
-
-
- mov bl, 0xF0
- and bl, ah
- shr bl, 4
- movzx rcx, bl
- mov bl, byte [hex_chars + rcx]
- movzx rcx, byte [print_r_len]
- mov byte [print_r_buffer + rcx], bl
- inc byte [print_r_len]
-
-
- mov bl, 0x0F
- and bl, ah
- movzx rcx, bl
- mov bl, byte [hex_chars + rcx]
- movzx rcx, byte [print_r_len]
- mov byte [print_r_buffer + rcx], bl
- inc byte [print_r_len]
 
  ret
 
-%line 8+1 print_ah.inc
-[section .text]
+
  print_ah:
- call push_ah
- call print_r
- ret
 
-%line 8+1 push_ax.inc
-[section .text]
- push_ax:
- call push_ah
- call push_al
- ret
+ mov al, ah
 
-%line 8+1 push_al.inc
-[section .text]
- push_al:
-
-
- mov bl, 0xF0
- and bl, al
- shr bl, 4
- movzx rcx, bl
- mov bl, byte [hex_chars + rcx]
- movzx rcx, byte [print_r_len]
- mov byte [print_r_buffer + rcx], bl
- inc byte [print_r_len]
-
-
- mov bl, 0x0F
- and bl, al
- movzx rcx, bl
- mov bl, byte [hex_chars + rcx]
- movzx rcx, byte [print_r_len]
- mov byte [print_r_buffer + rcx], bl
- inc byte [print_r_len]
+ call print_al
 
  ret
 
-%line 8+1 print_al.inc
-[section .text]
  print_al:
- call push_al
- call print_r
+
+ mov rdi, 2
+ call print_rax_hex
+
  ret
 
-%line 8+1 print_ax.inc
-[section .text]
  print_ax:
- call push_ax
- call print_r
+
+ mov rdi, 4
+ call print_rax_hex
+
  ret
 
-%line 10+1 index.asm
+ print_eax:
+
+ mov rdi, 8
+ call print_rax_hex
+
+ ret
+
+ print_rax:
+
+ mov rdi, 16
+ call print_rax_hex
+
+ ret
+
+%line 8+1 index.asm
 [global print_ah]
 [global print_al]
 [global print_ax]
+[global print_eax]
+[global print_rax]
 
 
 
