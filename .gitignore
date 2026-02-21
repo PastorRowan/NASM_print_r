@@ -1,0 +1,14 @@
+
+# Ignore NASM object files
+*.o
+
+# Ignore the compiled executable named 'index'
+index
+
+# Optional: ignore other executables
+*.exe
+*.out
+
+# Ignore editor/IDE files
+*.swp
+*.vscode/
